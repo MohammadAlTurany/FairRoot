@@ -108,6 +108,7 @@ field/FairFieldFactory.cxx
 field/FairRKPropagator.cxx
 
 source/FairSource.cxx
+source/FairFileSource.cxx
 )
 
 If(BUILD_MBS)
