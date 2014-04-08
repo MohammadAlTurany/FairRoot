@@ -24,6 +24,18 @@ FairTimeStamp::FairTimeStamp(Double_t time, Double_t timeerror)
     fEntryNr()
 {
 }
+
+
+
+FairTimeStamp::FairTimeStamp(const FairTimeStamp &TimeStamp) :
+  FairMultiLinkedData(), fTimeStamp(TimeStamp.fTimeStamp), fTimeStampError(TimeStamp.fTimeStampError), fEntryNr(TimeStamp.fEntryNr)
+//  fTimeStamp(TimeStamp.fTimeStamp), fTimeStampError(TimeStamp.fTimeStampError), fEntryNr(TimeStamp.fEntryNr)
+
+{
+    
+}
+
+
 // -----   Destructor   ----------------------------------------------------
 FairTimeStamp::~FairTimeStamp()
 {
@@ -31,9 +43,11 @@ FairTimeStamp::~FairTimeStamp()
 
 // -------------------------------------------------------------------------
 
-void FairTimeStamp::Print(std::ostream& out) const
+std::ostream& FairTimeStamp::Print(std::ostream& out) const
 {
   out << "EntryNr of Data: " << fEntryNr << " TimeStamp: " << GetTimeStamp() << " +/- " << GetTimeStampError() << std::endl;
   FairMultiLinkedData::Print(out);
+
+  return out;
 }
 ClassImp(FairTimeStamp)
