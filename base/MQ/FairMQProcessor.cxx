@@ -25,7 +25,7 @@ FairMQProcessor::FairMQProcessor() :
 
 FairMQProcessor::~FairMQProcessor()
 {
-  delete fProcessorTask;
+  if(fProcessorTask) delete fProcessorTask;
 }
 
 void FairMQProcessor::SetTask(FairMQProcessorTask* task)
@@ -36,8 +36,7 @@ void FairMQProcessor::SetTask(FairMQProcessorTask* task)
 void FairMQProcessor::Init()
 {
   FairMQDevice::Init();
-
-  fProcessorTask->InitTask();
+  if(fProcessorTask)fProcessorTask->InitTask();
 }
 
 void FairMQProcessor::Run()
@@ -58,7 +57,7 @@ void FairMQProcessor::Run()
     receivedMsgs++;
 
     if (received) {
-      fProcessorTask->Exec(msg, NULL);
+      if(fProcessorTask) fProcessorTask->Exec(msg, NULL);
 
       fPayloadOutputs->at(0)->Send(msg);
       sentMsgs++;
