@@ -29,6 +29,8 @@ void FairMQProxy::Run()
 
   while ( fState == RUNNING ) {
     fPayloadInputs->at(0)->Receive(msg);
+      
+      
     fPayloadOutputs->at(0)->Send(msg);
   }
 
