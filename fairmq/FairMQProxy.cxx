@@ -39,7 +39,6 @@ void FairMQProxy::Run()
         fPayloadInputs->at(0)->Receive(msg);
         fPayloadOutputs->at(0)->Send(msg);
     }
-
     delete msg;
 
     rateLogger.interrupt();
