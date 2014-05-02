@@ -45,7 +45,6 @@ void FairMQProxy::Run()
             received = 0;
         }
     }
-
     delete msg;
 
     try {
