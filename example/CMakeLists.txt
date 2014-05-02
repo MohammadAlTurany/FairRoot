@@ -15,5 +15,6 @@ add_subdirectory (Tutorial4)
 add_subdirectory (Tutorial5)
 add_subdirectory (Tutorial6)
 add_subdirectory (rutherford)
+add_subdirectory (flp2epn)
 
 
