@@ -64,9 +64,9 @@ void FairMQSocketZMQ::Connect(const string& address)
   }
 }
 
-size_t FairMQSocketZMQ::Send(FairMQMessage* msg)
+size_t FairMQSocketZMQ::Send(FairMQMessage* msg, int flags)
 {
-  int nbytes = zmq_msg_send (static_cast<zmq_msg_t*>(msg->GetMessage()), fSocket, 0);
+  int nbytes = zmq_msg_send (static_cast<zmq_msg_t*>(msg->GetMessage()), fSocket, flags);
   if (nbytes >= 0){
     fBytesTx += nbytes;
     ++fMessagesTx;
@@ -79,9 +79,9 @@ size_t FairMQSocketZMQ::Send(FairMQMessage* msg)
   return nbytes;
 }
 
-size_t FairMQSocketZMQ::Receive(FairMQMessage* msg)
+size_t FairMQSocketZMQ::Receive(FairMQMessage* msg, int flags)
 {
-  int nbytes = zmq_msg_recv (static_cast<zmq_msg_t*>(msg->GetMessage()), fSocket, 0);
+  int nbytes = zmq_msg_recv (static_cast<zmq_msg_t*>(msg->GetMessage()), fSocket, flags);
   if (nbytes >= 0){
     fBytesRx += nbytes;
     ++fMessagesRx;

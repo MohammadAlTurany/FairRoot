@@ -26,8 +26,8 @@ class FairMQSocketZMQ : public FairMQSocket
     virtual void Bind(const string& address);
     virtual void Connect(const string& address);
 
-    virtual size_t Send(FairMQMessage* msg);
-    virtual size_t Receive(FairMQMessage* msg);
+    virtual size_t Send(FairMQMessage* msg, int flags=0);
+    virtual size_t Receive(FairMQMessage* msg, int flags=0);
 
     virtual void* GetSocket();
     virtual int GetSocket(int nothing);
