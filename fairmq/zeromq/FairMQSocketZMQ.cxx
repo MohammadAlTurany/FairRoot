@@ -127,6 +127,16 @@ void FairMQSocketZMQ::SetOption(const string& option, const void* value, size_t 
   }
 }
 
+void FairMQSocketZMQ::GetOption(const string& option,  void* value, size_t *valueSize)
+{
+    int rc = zmq_getsockopt(fSocket, GetConstant(option), value, valueSize);
+    if (rc < 0) {
+        LOG(ERROR) << "failed Getting socket option, reason: " << zmq_strerror(errno);
+    }
+}
+
+
+
 unsigned long FairMQSocketZMQ::GetBytesTx()
 {
   return fBytesTx;
@@ -157,7 +167,7 @@ int FairMQSocketZMQ::GetConstant(const string& constant)
   if (constant == "pull") return ZMQ_PULL;
   if (constant == "snd-hwm") return ZMQ_SNDHWM;
   if (constant == "rcv-hwm") return ZMQ_RCVHWM;
-
+  if (constant == "rcvmore") return ZMQ_RCVMORE;
   return -1;
 }
 

@@ -30,6 +30,8 @@ class FairMQSocket
     virtual void Close() = 0;
 
     virtual void SetOption(const string& option, const void* value, size_t valueSize) = 0;
+    virtual void GetOption(const string& option, void* value, size_t *valueSize)=0;
+    
 
     virtual unsigned long GetBytesTx() = 0;
     virtual unsigned long GetBytesRx() = 0;
