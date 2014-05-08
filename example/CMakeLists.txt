@@ -21,3 +21,4 @@ else(SQLITE_FOUND AND POSTGRESQL_FOUND AND MYSQL_FOUND)
   Message(STATUS "Tutorial 6 will not be build MySQL PGSQL and SQLITE where not found") 
 endif(SQLITE_FOUND AND POSTGRESQL_FOUND AND MYSQL_FOUND)
 
+add_subdirectory (alicehlt)
