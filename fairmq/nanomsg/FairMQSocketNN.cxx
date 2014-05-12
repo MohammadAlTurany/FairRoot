@@ -54,7 +54,7 @@ void FairMQSocketNN::Connect(const string& address)
   }
 }
 
-size_t FairMQSocketNN::Send(FairMQMessage* msg)
+size_t FairMQSocketNN::Send(FairMQMessage* msg, const string& flag)
 {
   void* ptr = msg->GetMessage();
   int rc = nn_send(fSocket, &ptr, NN_MSG, 0);
@@ -69,7 +69,7 @@ size_t FairMQSocketNN::Send(FairMQMessage* msg)
   return rc;
 }
 
-size_t FairMQSocketNN::Receive(FairMQMessage* msg)
+size_t FairMQSocketNN::Receive(FairMQMessage* msg, const string& flag))
 {
   void* ptr = NULL;
   int rc = nn_recv(fSocket, &ptr, NN_MSG, 0);
@@ -108,6 +108,14 @@ void FairMQSocketNN::SetOption(const string& option, const void* value, size_t v
   }
 }
 
+void FairMQSocketNN::GetOption(const string& option, void* value, size_t* valueSize)
+{
+    int rc = nn_getsockopt(fSocket, NN_SOL_SOCKET, GetConstant(option), value, valueSize);
+    if (rc < 0) {
+        LOG(ERROR) << "failed getting socket option, reason: " << nn_strerror(errno);
+    }
+}
+
 unsigned long FairMQSocketNN::GetBytesTx()
 {
   return fBytesTx;
@@ -138,6 +146,15 @@ int FairMQSocketNN::GetConstant(const string& constant)
   if (constant == "pull") return NN_PULL;
   if (constant == "snd-hwm") return NN_SNDBUF;
   if (constant == "rcv-hwm") return NN_RCVBUF;
+
+  if (constant == "snd-more") {
+    LOG(ERROR) << "Multipart messages functionality currently not supported by nanomsg!"
+    return -1;
+  }
+  if (constant == "rcv-more") {
+    LOG(ERROR) << "Multipart messages functionality currently not supported by nanomsg!"
+    return -1;
+  }
 
   return -1;
 }
