@@ -10,7 +10,7 @@
 
 #include "FairMQLogger.h"
 #include "O2Proxy.h"
-#include "zmq.h"
+
 
 
 O2Proxy::O2Proxy()
