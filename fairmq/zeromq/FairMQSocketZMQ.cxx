@@ -64,9 +64,9 @@ void FairMQSocketZMQ::Connect(const string& address)
   }
 }
 
-size_t FairMQSocketZMQ::Send(FairMQMessage* msg, int flags)
+size_t FairMQSocketZMQ::Send(FairMQMessage* msg, const string& flag)
 {
-  int nbytes = zmq_msg_send (static_cast<zmq_msg_t*>(msg->GetMessage()), fSocket, flags);
+  int nbytes = zmq_msg_send (static_cast<zmq_msg_t*>(msg->GetMessage()), fSocket, GetConstant(flag));
   if (nbytes >= 0){
     fBytesTx += nbytes;
     ++fMessagesTx;
@@ -79,9 +79,9 @@ size_t FairMQSocketZMQ::Send(FairMQMessage* msg, int flags)
   return nbytes;
 }
 
-size_t FairMQSocketZMQ::Receive(FairMQMessage* msg, int flags)
+size_t FairMQSocketZMQ::Receive(FairMQMessage* msg, const string& flag)
 {
-  int nbytes = zmq_msg_recv (static_cast<zmq_msg_t*>(msg->GetMessage()), fSocket, flags);
+  int nbytes = zmq_msg_recv (static_cast<zmq_msg_t*>(msg->GetMessage()), fSocket, GetConstant(flag));
   if (nbytes >= 0){
     fBytesRx += nbytes;
     ++fMessagesRx;
@@ -127,15 +127,13 @@ void FairMQSocketZMQ::SetOption(const string& option, const void* value, size_t 
   }
 }
 
-void FairMQSocketZMQ::GetOption(const string& option,  void* value, size_t *valueSize)
+void FairMQSocketZMQ::GetOption(const string& option, void* value, size_t* valueSize)
 {
     int rc = zmq_getsockopt(fSocket, GetConstant(option), value, valueSize);
     if (rc < 0) {
-        LOG(ERROR) << "failed Getting socket option, reason: " << zmq_strerror(errno);
+        LOG(ERROR) << "failed getting socket option, reason: " << zmq_strerror(errno);
     }
 }
-
-
 
 unsigned long FairMQSocketZMQ::GetBytesTx()
 {
@@ -159,6 +157,7 @@ unsigned long FairMQSocketZMQ::GetMessagesRx()
 
 int FairMQSocketZMQ::GetConstant(const string& constant)
 {
+  if (constant == "") return 0;
   if (constant == "sub") return ZMQ_SUB;
   if (constant == "pub") return ZMQ_PUB;
   if (constant == "xsub") return ZMQ_XSUB;
@@ -167,7 +166,8 @@ int FairMQSocketZMQ::GetConstant(const string& constant)
   if (constant == "pull") return ZMQ_PULL;
   if (constant == "snd-hwm") return ZMQ_SNDHWM;
   if (constant == "rcv-hwm") return ZMQ_RCVHWM;
-  if (constant == "rcvmore") return ZMQ_RCVMORE;
+  if (constant == "snd-more") return ZMQ_SNDMORE;
+  if (constant == "rcv-more") return ZMQ_RCVMORE;
   return -1;
 }
 
