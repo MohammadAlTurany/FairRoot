@@ -184,6 +184,8 @@ unsigned long FairMQSocketZMQ::GetMessagesRx()
 
 int FairMQSocketZMQ::GetConstant(const string& constant)
 {
+    if (constant == "")
+        return 0;
     if (constant == "sub")
         return ZMQ_SUB;
     if (constant == "pub")
@@ -200,7 +202,9 @@ int FairMQSocketZMQ::GetConstant(const string& constant)
         return ZMQ_SNDHWM;
     if (constant == "rcv-hwm")
         return ZMQ_RCVHWM;
-    if (constant == "rcvmore")
+    if (constant == "snd-more")
+        return ZMQ_SNDMORE;
+    if (constant == "rcv-more")
         return ZMQ_RCVMORE;
     return -1;
 
