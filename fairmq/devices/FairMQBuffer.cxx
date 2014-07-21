@@ -6,47 +6,54 @@
  *                  copied verbatim in the file "LICENSE"                       *
  ********************************************************************************/
 /**
- * FairMQProxy.cxx
+ * FairMQBuffer.cxx
  *
- * @since 2013-10-02
- * @author A. Rybalchenko
+ * @since 2012-10-25
+ * @author D. Klein, A. Rybalchenko
  */
+
+#include <iostream>
 
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 
+#include "FairMQBuffer.h"
 #include "FairMQLogger.h"
-#include "FairMQProxy.h"
 
-FairMQProxy::FairMQProxy()
+FairMQBuffer::FairMQBuffer()
 {
 }
 
-FairMQProxy::~FairMQProxy()
-{
-}
-
-void FairMQProxy::Run()
+void FairMQBuffer::Run()
 {
     LOG(INFO) << ">>>>>>> Run <<<<<<<";
 
     boost::thread rateLogger(boost::bind(&FairMQDevice::LogSocketRates, this));
 
-    FairMQMessage* msg = fTransportFactory->CreateMessage();
-
-    size_t bytes_received = 0;
-
+    bool received = false;
     while (fState == RUNNING)
     {
-        bytes_received = fPayloadInputs->at(0)->Receive(msg);
-        if (bytes_received)
+        FairMQMessage* msg = fTransportFactory->CreateMessage();
+
+        received = fPayloadInputs->at(0)->Receive(msg);
+
+        if (received)
         {
             fPayloadOutputs->at(0)->Send(msg);
-            bytes_received = 0;
+            received = false;
         }
-    }
-    delete msg;
 
-    rateLogger.interrupt();
-    rateLogger.join();
+        delete msg;
+    }
+
+    try {
+        rateLogger.interrupt();
+        rateLogger.join();
+    } catch(boost::thread_resource_error& e) {
+        LOG(ERROR) << e.what();
+    }
+}
+
+FairMQBuffer::~FairMQBuffer()
+{
 }
