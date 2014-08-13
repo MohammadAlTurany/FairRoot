@@ -49,12 +49,7 @@ class O2FLPex: public FairMQDevice
     virtual void Run();
     
   private:
-    void ReceiveHeartbeat ();
-    void SendPayload (Content* payload);
-    
     bool updateIPHeartbeat (string str);
-    
-    boost::mutex mtx_;
 };
 
 #endif /* O2FLPex_H_ */
