@@ -36,13 +36,11 @@ void O2FLPex::Init()
 
 bool O2FLPex::updateIPHeartbeat (string str)
 {
-  boost::posix_time::ptime currentHeartbeat = boost::posix_time::microsec_clock::local_time();
-  
   for (int iOutput = 0; iOutput < fNumOutputs; iOutput++) {
     if ( GetProperty (OutputAddress, "", iOutput) == str ) {
-      //mtx_.lock();
-      //boost::posix_time::ptime storedHeartbeat = GetProperty (OutputHeartbeat, storedHeartbeat, iOutput);
-      //mtx_.unlock();
+      boost::posix_time::ptime currentHeartbeat = boost::posix_time::microsec_clock::local_time();
+      boost::posix_time::ptime storedHeartbeat = GetProperty (OutputHeartbeat, storedHeartbeat, iOutput);
+
       //if ( to_simple_string (storedHeartbeat) != "not-a-date-time" ) {
       //  LOG(INFO) << "EPN " << iOutput << " last seen "
       //            << (currentHeartbeat - storedHeartbeat).total_milliseconds()
@@ -52,9 +50,7 @@ bool O2FLPex::updateIPHeartbeat (string str)
       //  LOG(INFO) << "IP has no heartbeat associated. Adding heartbeat: " << currentHeartbeat;
       //}
 
-      mtx_.lock();
       SetProperty (OutputHeartbeat, currentHeartbeat, iOutput);
-      mtx_.unlock();
       
       return true;
     }
@@ -62,58 +58,6 @@ bool O2FLPex::updateIPHeartbeat (string str)
   LOG(ERROR) << "IP " << str << " unknown, not provided at execution time";
 
   return false;
-}
-
-void O2FLPex::SendPayload (Content* payload)
-{
-  while ( fState == RUNNING ) {
-    boost::posix_time::ptime currentHeartbeat = boost::posix_time::microsec_clock::local_time();
-    
-    for (int iOutput = 0; iOutput < fNumOutputs; iOutput++) {
-      mtx_.lock();
-      boost::posix_time::ptime storedHeartbeat = GetProperty (OutputHeartbeat, storedHeartbeat, iOutput);
-      mtx_.unlock();
-      
-      if ( to_simple_string (storedHeartbeat) == "not-a-date-time" ||
-         (currentHeartbeat - storedHeartbeat).total_milliseconds() > fHeartbeatTimeoutInMs) {
-        //LOG(INFO) << "EPN " << iOutput << " has not send a heartbeat, or heartbeat too old";
-        continue;
-      }
-      
-      //LOG(INFO) << "Pubishing payload to EPN " << iOutput;
-      
-      FairMQMessage* msg = fTransportFactory->CreateMessage(fEventSize * sizeof(Content));
-      memcpy(msg->GetData(), payload, fEventSize * sizeof(Content));
-      
-      fPayloadOutputs->at(iOutput)->Send(msg);
-      
-      delete msg;
-    }
-    
-    --fEventCounter;
-
-    while (fEventCounter == 0) {
-      boost::this_thread::sleep (boost::posix_time::milliseconds(1));
-    }
-  }
-}
-
-void O2FLPex::ReceiveHeartbeat()
-{
-  while ( fState == RUNNING ) {
-    FairMQMessage* msg = fTransportFactory->CreateMessage();
-
-    fPayloadInputs->at(0)->Receive(msg);
-    
-    std::string rpl = std::string(static_cast<char*>(msg->GetData()), msg->GetSize());
-    
-    //LOG(INFO) << "Message size: " << msg->GetSize() << " Message content: " << rpl;
-      
-    //Add or update the heartbeat associated with a given EPN
-    updateIPHeartbeat (rpl);
-    
-    delete msg;
-  }
 }
 
 void O2FLPex::Run()
@@ -140,15 +84,42 @@ void O2FLPex::Run()
         (&payload[i])->b = (rand() % 100 + 1) / (rand() % 100 + 1);
         //LOG(INFO) << (&payload[i])->id << " " << (&payload[i])->x << " " << (&payload[i])->y << " " << (&payload[i])->z << " " << (&payload[i])->a << " " << (&payload[i])->b;
   }
-    
-  boost::thread fReceiveThread (boost::bind(&O2FLPex::SendPayload, this, payload));
-  boost::thread fSendThread (boost::bind(&O2FLPex::ReceiveHeartbeat, this));
-  
-  //Wait for the threads to finish execution
-  fReceiveThread.join();
-  fSendThread.join();
 
   delete[] payload;
+  
+  while ( fState == RUNNING ) {
+    //Receive heartbeat
+    FairMQMessage* heartbeatMsg = fTransportFactory->CreateMessage();
+
+    size_t heartbeatSize = fPayloadInputs->at(0)->Receive(heartbeatMsg, "no-block");
+    
+    if ( heartbeatSize > 0 ) {
+      std::string rpl = std::string (static_cast<char*>(heartbeatMsg->GetData()), heartbeatMsg->GetSize());
+      updateIPHeartbeat (rpl);
+    }
+    
+    delete heartbeatMsg;
+    
+    //Send payload
+    for (int iOutput = 0; iOutput < fNumOutputs; iOutput++) {
+      boost::posix_time::ptime currentHeartbeat = boost::posix_time::microsec_clock::local_time();
+      boost::posix_time::ptime storedHeartbeat = GetProperty (OutputHeartbeat, storedHeartbeat, iOutput);
+      
+      if ( to_simple_string (storedHeartbeat) == "not-a-date-time" ||
+         (currentHeartbeat - storedHeartbeat).total_milliseconds() > fHeartbeatTimeoutInMs) {
+        //LOG(INFO) << "EPN " << iOutput << " has not send a heartbeat, or heartbeat too old";
+        continue;
+      }
+      
+      //LOG(INFO) << "Pubishing payload to EPN " << iOutput;
+      FairMQMessage* payloadMsg = fTransportFactory->CreateMessage(fEventSize * sizeof(Content));
+      memcpy(payloadMsg->GetData(), payload, fEventSize * sizeof(Content));
+      
+      fPayloadOutputs->at(iOutput)->Send(payloadMsg);
+      
+      delete payloadMsg;
+    }
+  }
   
   rateLogger.interrupt();
   resetEventCounter.interrupt();
