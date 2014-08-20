@@ -24,7 +24,6 @@
 
 FairMQBinSampler::FairMQBinSampler()
     : fEventSize(10000)
-    , fEventRate(1)
     , fEventCounter(0)
 {
 }
@@ -44,7 +43,6 @@ void FairMQBinSampler::Run()
     // boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 
     boost::thread rateLogger(boost::bind(&FairMQDevice::LogSocketRates, this));
-    boost::thread resetEventCounter(boost::bind(&FairMQBinSampler::ResetEventCounter, this));
 
     srand(time(NULL));
 
@@ -70,38 +68,13 @@ void FairMQBinSampler::Run()
 
         fPayloadOutputs->at(0)->Send(msg);
 
-        --fEventCounter;
-
-        while (fEventCounter == 0)
-        {
-            boost::this_thread::sleep(boost::posix_time::milliseconds(1));
-        }
-
         delete[] payload;
         delete msg;
     }
 
     rateLogger.interrupt();
-    resetEventCounter.interrupt();
 
     rateLogger.join();
-    resetEventCounter.join();
-}
-
-void FairMQBinSampler::ResetEventCounter()
-{
-    while (true)
-    {
-        try
-        {
-            fEventCounter = fEventRate / 100;
-            boost::this_thread::sleep(boost::posix_time::milliseconds(10));
-        }
-        catch (boost::thread_interrupted&)
-        {
-            break;
-        }
-    }
 }
 
 void FairMQBinSampler::Log(int intervalInMs)
@@ -165,9 +138,6 @@ void FairMQBinSampler::SetProperty(const int key, const int value, const int slo
         case EventSize:
             fEventSize = value;
             break;
-        case EventRate:
-            fEventRate = value;
-            break;
         default:
             FairMQDevice::SetProperty(key, value, slot);
             break;
@@ -180,8 +150,6 @@ int FairMQBinSampler::GetProperty(const int key, const int default_ /*= 0*/, con
     {
         case EventSize:
             return fEventSize;
-        case EventRate:
-            return fEventRate;
         default:
             return FairMQDevice::GetProperty(key, default_, slot);
     }

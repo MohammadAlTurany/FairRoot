@@ -8,36 +8,30 @@ fi
 
 ID="101"
 eventSize="1000"
-eventRate="0"
 numIoThreads="1"
 outputSocketType="push"
 outputBufSize=$buffSize
 outputMethod="bind"
 outputAddress="tcp://*:5565"
-xterm -e @CMAKE_BINARY_DIR@/bin/testFLP $ID $eventSize $eventRate $numIoThreads $outputSocketType $outputBufSize $outputMethod $outputAddress &
+xterm -e @CMAKE_BINARY_DIR@/bin/testFLP $ID $eventSize $numIoThreads $outputSocketType $outputBufSize $outputMethod $outputAddress &
 
 ID="102"
 eventSize="10000"
-eventRate="0"
 numIoThreads="1"
 outputSocketType="push"
 outputBufSize=$buffSize
 outputMethod="bind"
 outputAddress="tcp://*:5566"
-xterm -e @CMAKE_BINARY_DIR@/bin/testFLP $ID $eventSize $eventRate $numIoThreads $outputSocketType $outputBufSize $outputMethod $outputAddress &
+xterm -e @CMAKE_BINARY_DIR@/bin/testFLP $ID $eventSize $numIoThreads $outputSocketType $outputBufSize $outputMethod $outputAddress &
 
 ID="103"
 eventSize="10000"
-eventRate="0"
 numIoThreads="1"
 outputSocketType="push"
 outputBufSize=$buffSize
 outputMethod="bind"
 outputAddress="tcp://*:5567"
-xterm -e @CMAKE_BINARY_DIR@/bin/testFLP $ID $eventSize $eventRate $numIoThreads $outputSocketType $outputBufSize $outputMethod $outputAddress &
-
-
-
+xterm -e @CMAKE_BINARY_DIR@/bin/testFLP $ID $eventSize $numIoThreads $outputSocketType $outputBufSize $outputMethod $outputAddress &
 
 ID="501"
 numIoThreads="1"
@@ -64,10 +58,6 @@ outputMethod="bind"
 outputAddress="tcp://*:5581"
 xterm -e @CMAKE_BINARY_DIR@/bin/testMerger $ID $numIoThreads $numInputs $inputSocketType1 $inputRcvBufSize1 $inputMethod1 $inputAddress1 $inputSocketType2 $inputRcvBufSize2 $inputMethod2 $inputAddress2  $inputSocketType3 $inputRcvBufSize3 $inputMethod3 $inputAddress3 $outputSocketType $outputSndBufSize $outputMethod $outputAddress &
 
-
-
-
-
 ID="201"
 numIoThreads="1"
 inputSocketType="pull"
@@ -80,9 +70,6 @@ outputMethod="bind"
 outputAddress="tcp://*:5582"
 xterm -e @CMAKE_BINARY_DIR@/bin/testProxy $ID $numIoThreads $inputSocketType $inputRcvBufSize $inputMethod $inputAddress $outputSocketType $outputSndBufSize $outputMethod $outputAddress &
 
-
-
-
 ID="301"
 numIoThreads="1"
 inputSocketType="pull"
@@ -90,7 +77,6 @@ inputRcvBufSize=$buffSize
 inputMethod="connect"
 inputAddress="tcp://localhost:5582"
 xterm -e @CMAKE_BINARY_DIR@/bin/testEPN $ID $numIoThreads $inputSocketType $inputRcvBufSize $inputMethod $inputAddress &
-
 
 ID="302"
 numIoThreads="1"
@@ -100,7 +86,6 @@ inputMethod="connect"
 inputAddress="tcp://localhost:5582"
 xterm -e @CMAKE_BINARY_DIR@/bin/testEPN $ID $numIoThreads $inputSocketType $inputRcvBufSize $inputMethod $inputAddress &
 
-
 ID="303"
 numIoThreads="1"
 inputSocketType="pull"
@@ -109,7 +94,6 @@ inputMethod="connect"
 inputAddress="tcp://localhost:5582"
 xterm -e @CMAKE_BINARY_DIR@/bin/testEPN $ID $numIoThreads $inputSocketType $inputRcvBufSize $inputMethod $inputAddress &
 
-
 ID="304"
 numIoThreads="1"
 inputSocketType="pull"
@@ -117,4 +101,3 @@ inputRcvBufSize=$buffSize
 inputMethod="connect"
 inputAddress="tcp://localhost:5582"
 xterm -e @CMAKE_BINARY_DIR@/bin/testEPN $ID $numIoThreads $inputSocketType $inputRcvBufSize $inputMethod $inputAddress &
-

@@ -94,3 +94,5 @@ run the dummy  MQtasks scripts ( sampler - processor ( with initialisation) - fi
 ##flp2epn
 Simple example for Message based processing using FairRoot.
 
+##flp2epn-dynamic
+Simple example for Message based processing using FairRoot. Includes a heartbeat exchange between FLPs and EPNs on a regular interval to add failure detection.

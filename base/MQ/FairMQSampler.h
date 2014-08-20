@@ -55,13 +55,11 @@ class FairMQSampler: public FairMQDevice
     enum {
       InputFile = FairMQDevice::Last,
       Branch,
-      ParFile,
-      EventRate
+      ParFile
     };
     FairMQSampler();
     virtual ~FairMQSampler();
 
-    void ResetEventCounter();
     virtual void ListenToCommands();
 
     virtual void SetProperty(const int key, const string& value, const int slot = 0);
@@ -92,8 +90,6 @@ protected:
   string
   fBranch; // The name of the sub-detector branch to stream the digis from.
   int fNumEvents;
-  int fEventRate;
-  int fEventCounter;
   bool fContinuous;
 };
 
