@@ -28,13 +28,12 @@ ID="101"
 inputFile="@CMAKE_SOURCE_DIR@/example/Tutorial3/macro/data/testdigi.root"
 parameterFile="@CMAKE_SOURCE_DIR@/example/Tutorial3/macro/data/testparams.root"
 branch="FairTestDetectorDigi"
-eventRate="0"
 numIoThreads="1"
 outputSocketType="push"
 outputBufSize=$buffSize
 outputMethod="connect"
 outputAddress="tcp://localhost:5565"
-xterm -e @CMAKE_BINARY_DIR@/bin/testDetectorSampler$dataFormat $ID $inputFile $parameterFile $branch $eventRate $numIoThreads $outputSocketType $outputBufSize $outputMethod $outputAddress &
+xterm -e @CMAKE_BINARY_DIR@/bin/testDetectorSampler$dataFormat $ID $inputFile $parameterFile $branch $numIoThreads $outputSocketType $outputBufSize $outputMethod $outputAddress &
 
 
 ID="201"

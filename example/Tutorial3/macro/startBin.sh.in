@@ -8,13 +8,12 @@ fi
 
 ID="101"
 eventSize="10000"
-eventRate="0"
 numIoThreads="1"
 outputSocketType="push"
 outputBufSize=$buffSize
 outputMethod="bind"
 outputAddress="tcp://*:5565"
-xterm -e @CMAKE_BINARY_DIR@/bin/binsampler $ID $eventSize $eventRate $numIoThreads $outputSocketType $outputBufSize $outputMethod $outputAddress &
+xterm -e @CMAKE_BINARY_DIR@/bin/binsampler $ID $eventSize $numIoThreads $outputSocketType $outputBufSize $outputMethod $outputAddress &
 
 ID="201"
 numIoThreads="1"
