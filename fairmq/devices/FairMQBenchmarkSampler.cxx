@@ -22,8 +22,6 @@
 
 FairMQBenchmarkSampler::FairMQBenchmarkSampler()
     : fEventSize(10000)
-    , fEventRate(1)
-    , fEventCounter(0)
 {
 }
 
@@ -42,7 +40,6 @@ void FairMQBenchmarkSampler::Run()
     // boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 
     boost::thread rateLogger(boost::bind(&FairMQDevice::LogSocketRates, this));
-    boost::thread resetEventCounter(boost::bind(&FairMQBenchmarkSampler::ResetEventCounter, this));
 
     void* buffer = operator new[](fEventSize);
     FairMQMessage* base_msg = fTransportFactory->CreateMessage(buffer, fEventSize);
@@ -54,13 +51,6 @@ void FairMQBenchmarkSampler::Run()
 
         fPayloadOutputs->at(0)->Send(msg);
 
-        --fEventCounter;
-
-        while (fEventCounter == 0)
-        {
-            boost::this_thread::sleep(boost::posix_time::milliseconds(1));
-        }
-
         delete msg;
     }
 
@@ -69,8 +59,6 @@ void FairMQBenchmarkSampler::Run()
     try {
         rateLogger.interrupt();
         rateLogger.join();
-        resetEventCounter.interrupt();
-        resetEventCounter.join();
     } catch(boost::thread_resource_error& e) {
         LOG(ERROR) << e.what();
     }
@@ -81,22 +69,6 @@ void FairMQBenchmarkSampler::Run()
     boost::lock_guard<boost::mutex> lock(fRunningMutex);
     fRunningFinished = true;
     fRunningCondition.notify_one();
-}
-
-void FairMQBenchmarkSampler::ResetEventCounter()
-{
-    while (true)
-    {
-        try
-        {
-            fEventCounter = fEventRate / 100;
-            boost::this_thread::sleep(boost::posix_time::milliseconds(10));
-        }
-        catch (boost::thread_interrupted&)
-        {
-            break;
-        }
-    }
 }
 
 void FairMQBenchmarkSampler::Log(int intervalInMs)
@@ -160,9 +132,6 @@ void FairMQBenchmarkSampler::SetProperty(const int key, const int value, const i
         case EventSize:
             fEventSize = value;
             break;
-        case EventRate:
-            fEventRate = value;
-            break;
         default:
             FairMQDevice::SetProperty(key, value, slot);
             break;
@@ -175,8 +144,6 @@ int FairMQBenchmarkSampler::GetProperty(const int key, const int default_ /*= 0*
     {
         case EventSize:
             return fEventSize;
-        case EventRate:
-            return fEventRate;
         default:
             return FairMQDevice::GetProperty(key, default_, slot);
     }

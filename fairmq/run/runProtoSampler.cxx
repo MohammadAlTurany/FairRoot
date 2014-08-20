@@ -54,9 +54,9 @@ static void s_catch_signals(void)
 
 int main(int argc, char** argv)
 {
-    if (argc != 9)
+    if (argc != 8)
     {
-        cout << "Usage: bsampler ID eventSize eventRate numIoTreads\n"
+        cout << "Usage: bsampler ID eventSize numIoTreads\n"
              << "\t\toutputSocketType outputSndBufSize outputMethod outputAddress\n" << endl;
         return 1;
     }
@@ -81,11 +81,6 @@ int main(int argc, char** argv)
     int eventSize;
     stringstream(argv[i]) >> eventSize;
     sampler.SetProperty(FairMQProtoSampler::EventSize, eventSize);
-    ++i;
-
-    int eventRate;
-    stringstream(argv[i]) >> eventRate;
-    sampler.SetProperty(FairMQProtoSampler::EventRate, eventRate);
     ++i;
 
     int numIoThreads;
