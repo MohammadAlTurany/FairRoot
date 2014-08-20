@@ -64,10 +64,10 @@ static void s_catch_signals(void)
 
 int main(int argc, char** argv)
 {
-    if (argc != 11)
+    if (argc != 10)
     {
         cout << "Usage: testDetectorSampler \tID inputFile parameterFile\n"
-             << "\t\tbranch eventRate numIoTreads\n"
+             << "\t\tbranch numIoTreads\n"
              << "\t\toutputSocketType outputSndBufSize outputMethod outputAddress\n" << endl;
         return 1;
     }
@@ -96,11 +96,6 @@ int main(int argc, char** argv)
     ++i;
 
     sampler.SetProperty(FairMQSampler<TLoader>::Branch, argv[i]);
-    ++i;
-
-    int eventRate;
-    stringstream(argv[i]) >> eventRate;
-    sampler.SetProperty(FairMQSampler<TLoader>::EventRate, eventRate);
     ++i;
 
     int numIoThreads;

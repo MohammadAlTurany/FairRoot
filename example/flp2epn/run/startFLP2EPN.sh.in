@@ -8,15 +8,12 @@ fi
 
 ID="101"
 eventSize="10000"
-eventRate="0"
 numIoThreads="1"
 outputSocketType="push"
 outputBufSize=$buffSize
 outputMethod="connect"
 outputAddress="tcp://localhost:5565"
-xterm -e @CMAKE_BINARY_DIR@/bin/testFLP $ID $eventSize $eventRate $numIoThreads $outputSocketType $outputBufSize $outputMethod $outputAddress &
-
-
+xterm -e @CMAKE_BINARY_DIR@/bin/testFLP $ID $eventSize $numIoThreads $outputSocketType $outputBufSize $outputMethod $outputAddress &
 
 ID="201"
 numIoThreads="1"
@@ -30,8 +27,6 @@ outputMethod="bind"
 outputAddress="tcp://*:5566"
 xterm -e @CMAKE_BINARY_DIR@/bin/testProxy $ID $numIoThreads $inputSocketType $inputRcvBufSize $inputMethod $inputAddress $outputSocketType $outputSndBufSize $outputMethod $outputAddress &
 
-
-
 ID="301"
 numIoThreads="1"
 inputSocketType="pull"
@@ -39,4 +34,3 @@ inputRcvBufSize=$buffSize
 inputMethod="connect"
 inputAddress="tcp://localhost:5566"
 xterm -e @CMAKE_BINARY_DIR@/bin/testEPN $ID $numIoThreads $inputSocketType $inputRcvBufSize $inputMethod $inputAddress &
-

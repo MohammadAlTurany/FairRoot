@@ -34,8 +34,6 @@ Here is a brief description of the script arguments and their possible values.
 
 **branch**: define the sampler task (this is likely to be removed in future version)
 
-**eventRate**: optional limit for number of events/second, e.g. 1000 - up to 1000 events per second. Value 0 means no limit.
-
 ### Processor specific
 
 **processorTask**: define the processor task (this is likely to be removed in future version)
@@ -87,13 +85,12 @@ ID="101"
 inputFile="@CMAKE_SOURCE_DIR@/example/Tutorial3/macro/data/testdigi.root"
 parameterFile="@CMAKE_SOURCE_DIR@/example/Tutorial3/macro/data/testparams.root"
 branch="FairTestDetectorDigi"
-eventRate="0"
 numIoThreads="1"
 outputSocketType="push"
 outputBufSize=$buffSize
 outputMethod="bind"
 outputAddress="tcp://*:5565"
-xterm -e @CMAKE_BINARY_DIR@/bin/testDetectorSampler$dataFormat $ID $inputFile $parameterFile $branch $eventRate $numIoThreads $outputSocketType $outputBufSize $outputMethod $outputAddress &
+xterm -e @CMAKE_BINARY_DIR@/bin/testDetectorSampler$dataFormat $ID $inputFile $parameterFile $branch $numIoThreads $outputSocketType $outputBufSize $outputMethod $outputAddress &
 
 ID="201"
 processorTask="FairTestDetectorMQRecoTask"

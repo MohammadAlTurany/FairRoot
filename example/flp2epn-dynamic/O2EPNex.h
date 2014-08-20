@@ -21,8 +21,14 @@ struct Content {
 class O2EPNex: public FairMQDevice
 {
   public:
+    enum {
+      HeartbeatIntervalInMs
+    };
     O2EPNex();
     virtual ~O2EPNex();
+    
+    int fHeartbeatIntervalInMs;
+
   protected:
     virtual void Run();
 };

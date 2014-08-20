@@ -2,26 +2,22 @@
  * O2FLPex.cxx
  *
  * @since 2013-04-23
- * @author D. Klein, A. Rybalchenko, M.Al-Turany, C. Kouzinopoulos
+ * @author D. Klein, A. Rybalchenko, M.Al-Turany
  */
 
 #include <vector>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
-#include <iostream>
-#include <sstream>
 
 #include "O2FLPex.h"
 #include "FairMQLogger.h"
 
+
 O2FLPex::O2FLPex() :
-  fEventSize(10000),
-  fEventRate(1),
-  fEventCounter(0)
+  fEventSize(10000)
 {
 }
 
@@ -34,110 +30,42 @@ void O2FLPex::Init()
   FairMQDevice::Init();
 }
 
-bool O2FLPex::updateIPHeartbeat (string str)
-{
-  for (int iOutput = 0; iOutput < fNumOutputs; iOutput++) {
-    if ( GetProperty (OutputAddress, "", iOutput) == str ) {
-      boost::posix_time::ptime currentHeartbeat = boost::posix_time::microsec_clock::local_time();
-      boost::posix_time::ptime storedHeartbeat = GetProperty (OutputHeartbeat, storedHeartbeat, iOutput);
-
-      //if ( to_simple_string (storedHeartbeat) != "not-a-date-time" ) {
-      //  LOG(INFO) << "EPN " << iOutput << " last seen "
-      //            << (currentHeartbeat - storedHeartbeat).total_milliseconds()
-      //            << " ms ago. Updating heartbeat...";
-      //}
-      //else {
-      //  LOG(INFO) << "IP has no heartbeat associated. Adding heartbeat: " << currentHeartbeat;
-      //}
-
-      SetProperty (OutputHeartbeat, currentHeartbeat, iOutput);
-      
-      return true;
-    }
-  }
-  LOG(ERROR) << "IP " << str << " unknown, not provided at execution time";
-
-  return false;
-}
-
 void O2FLPex::Run()
 {
   LOG(INFO) << ">>>>>>> Run <<<<<<<";
+  //boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 
-  boost::thread rateLogger (boost::bind(&FairMQDevice::LogSocketRates, this));
-  boost::thread resetEventCounter (boost::bind(&O2FLPex::ResetEventCounter, this));
+  boost::thread rateLogger(boost::bind(&FairMQDevice::LogSocketRates, this));
 
   srand(time(NULL));
- 
-  stringstream ss(fId);
-    
-  int Flp_id;
-  ss >> Flp_id;
-    
-  Content* payload = new Content[fEventSize];
-  for (int i = 0; i < fEventSize; ++i) {
-        (&payload[i])->id = Flp_id;
-        (&payload[i])->x = rand() % 100 + 1;
-        (&payload[i])->y = rand() % 100 + 1;
-        (&payload[i])->z = rand() % 100 + 1;
-        (&payload[i])->a = (rand() % 100 + 1) / (rand() % 100 + 1);
-        (&payload[i])->b = (rand() % 100 + 1) / (rand() % 100 + 1);
-        //LOG(INFO) << (&payload[i])->id << " " << (&payload[i])->x << " " << (&payload[i])->y << " " << (&payload[i])->z << " " << (&payload[i])->a << " " << (&payload[i])->b;
-  }
 
-  delete[] payload;
-  
+  LOG(DEBUG) << "Message size: " << fEventSize * sizeof(Content) << " bytes.";
+
   while ( fState == RUNNING ) {
-    //Receive heartbeat
-    FairMQMessage* heartbeatMsg = fTransportFactory->CreateMessage();
 
-    size_t heartbeatSize = fPayloadInputs->at(0)->Receive(heartbeatMsg, "no-block");
-    
-    if ( heartbeatSize > 0 ) {
-      std::string rpl = std::string (static_cast<char*>(heartbeatMsg->GetData()), heartbeatMsg->GetSize());
-      updateIPHeartbeat (rpl);
+    Content* payload = new Content[fEventSize];
+
+    for (int i = 0; i < fEventSize; ++i) {
+      (&payload[i])->x = rand() % 100 + 1;
+      (&payload[i])->y = rand() % 100 + 1;
+      (&payload[i])->z = rand() % 100 + 1;
+      (&payload[i])->a = (rand() % 100 + 1) / (rand() % 100 + 1);
+      (&payload[i])->b = (rand() % 100 + 1) / (rand() % 100 + 1);
+      // LOG(INFO) << (&payload[i])->x << " " << (&payload[i])->y << " " << (&payload[i])->z << " " << (&payload[i])->a << " " << (&payload[i])->b;
     }
-    
-    delete heartbeatMsg;
-    
-    //Send payload
-    for (int iOutput = 0; iOutput < fNumOutputs; iOutput++) {
-      boost::posix_time::ptime currentHeartbeat = boost::posix_time::microsec_clock::local_time();
-      boost::posix_time::ptime storedHeartbeat = GetProperty (OutputHeartbeat, storedHeartbeat, iOutput);
-      
-      if ( to_simple_string (storedHeartbeat) == "not-a-date-time" ||
-         (currentHeartbeat - storedHeartbeat).total_milliseconds() > fHeartbeatTimeoutInMs) {
-        //LOG(INFO) << "EPN " << iOutput << " has not send a heartbeat, or heartbeat too old";
-        continue;
-      }
-      
-      //LOG(INFO) << "Pubishing payload to EPN " << iOutput;
-      FairMQMessage* payloadMsg = fTransportFactory->CreateMessage(fEventSize * sizeof(Content));
-      memcpy(payloadMsg->GetData(), payload, fEventSize * sizeof(Content));
-      
-      fPayloadOutputs->at(iOutput)->Send(payloadMsg);
-      
-      delete payloadMsg;
-    }
+
+    FairMQMessage* msg = fTransportFactory->CreateMessage(fEventSize * sizeof(Content));
+    memcpy(msg->GetData(), payload, fEventSize * sizeof(Content));
+
+    fPayloadOutputs->at(0)->Send(msg);
+
+    delete[] payload;
+    delete msg;
   }
-  
+
   rateLogger.interrupt();
-  resetEventCounter.interrupt();
 
   rateLogger.join();
-  resetEventCounter.join();
-}
-
-void O2FLPex::ResetEventCounter()
-{
-  while ( true ) {
-    try {
-      fEventCounter = fEventRate / 100;
-      boost::this_thread::sleep(boost::posix_time::milliseconds(10));
-    } catch (boost::thread_interrupted&) {
-      break;
-    }
-  }
 }
 
 void O2FLPex::Log(int intervalInMs)
@@ -197,9 +125,6 @@ void O2FLPex::SetProperty(const int key, const int value, const int slot/*= 0*/)
   case EventSize:
     fEventSize = value;
     break;
-  case EventRate:
-    fEventRate = value;
-    break;
   default:
     FairMQDevice::SetProperty(key, value, slot);
     break;
@@ -211,25 +136,6 @@ int O2FLPex::GetProperty(const int key, const int default_/*= 0*/, const int slo
   switch (key) {
   case EventSize:
     return fEventSize;
-  case EventRate:
-    return fEventRate;
-  default:
-    return FairMQDevice::GetProperty(key, default_, slot);
-  }
-}
-
-void O2FLPex::SetProperty(const int key, const boost::posix_time::ptime value, const int slot/*= 0*/)
-{
-  switch (key) {
-  default:
-    FairMQDevice::SetProperty(key, value, slot);
-    break;
-  }
-}
-
-boost::posix_time::ptime O2FLPex::GetProperty(const int key, const boost::posix_time::ptime default_, const int slot/*= 0*/)
-{
-  switch (key) {
   default:
     return FairMQDevice::GetProperty(key, default_, slot);
   }

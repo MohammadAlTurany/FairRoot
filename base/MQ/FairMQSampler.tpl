@@ -17,8 +17,6 @@ FairMQSampler<Loader>::FairMQSampler() :
   fFairRunAna(new FairRunAna()),
   fSamplerTask(new Loader()),
   fNumEvents(0),
-  fEventRate(1),
-  fEventCounter(0),
   fContinuous(false)
 {
 }
@@ -71,7 +69,6 @@ void FairMQSampler<Loader>::Run()
   LOG(INFO) << ">>>>>>> Run <<<<<<<";
 
   boost::thread rateLogger(boost::bind(&FairMQDevice::LogSocketRates, this));
-  // boost::thread resetEventCounter(boost::bind(&FairMQSampler::ResetEventCounter, this));
   // boost::thread commandListener(boost::bind(&FairMQSampler::ListenToCommands, this));
 
   int sentMsgs = 0;
@@ -92,12 +89,6 @@ void FairMQSampler<Loader>::Run()
 
       fSamplerTask->GetOutput()->CloseMessage();
 
-      // Optional event rate limiting
-      // --fEventCounter;
-      // while (fEventCounter == 0) {
-      //   boost::this_thread::sleep(boost::posix_time::milliseconds(1));
-      // }
-
       if( fState != RUNNING ) { break; }
     }
   } while ( fState == RUNNING && fContinuous );
@@ -111,8 +102,6 @@ void FairMQSampler<Loader>::Run()
   try {
     rateLogger.interrupt();
     rateLogger.join();
-    // resetEventCounter.interrupt();
-    // resetEventCounter.join();
     // commandListener.interrupt();
     // commandListener.join();
   }
@@ -128,22 +117,6 @@ void FairMQSampler<Loader>::SendPart()
 {
   fPayloadOutputs->at(0)->Send(fSamplerTask->GetOutput(), "snd-more");
   fSamplerTask->GetOutput()->CloseMessage();
-}
-
-template <typename Loader>
-void FairMQSampler<Loader>::ResetEventCounter()
-{
-  while (true) {
-    try {
-      fEventCounter = fEventRate / 100;
-      boost::this_thread::sleep(boost::posix_time::milliseconds(10));
-    }
-    catch (boost::thread_interrupted &) {
-      LOG(DEBUG) << "resetEventCounter interrupted";
-      break;
-    }
-  }
-  LOG(DEBUG) << ">>>>>>> stopping resetEventCounter <<<<<<<";
 }
 
 template <typename Loader>
@@ -218,9 +191,6 @@ void FairMQSampler<Loader>::SetProperty(const int key, const int value, const in
 {
   switch (key)
   {
-    case EventRate:
-      fEventRate = value;
-      break;
     default:
       FairMQDevice::SetProperty(key, value, slot);
       break;
@@ -232,8 +202,6 @@ int FairMQSampler<Loader>::GetProperty(const int key, const int default_/*= 0*/,
 {
   switch (key)
   {
-    case EventRate:
-      return fEventRate;
     default:
       return FairMQDevice::GetProperty(key, default_, slot);
   }
