@@ -103,8 +103,11 @@ int main(int argc, char** argv)
     sink.ChangeState(FairMQSink::SETINPUT);
     sink.ChangeState(FairMQSink::RUN);
 
-    char ch;
-    cin.get(ch);
+      boost::unique_lock<boost::mutex> lock(sink.fRunningMutex);
+      while (!sink.fRunningFinished)
+      {
+          sink.fRunningCondition.wait(lock);
+      }
 
     sink.ChangeState(FairMQSink::STOP);
     sink.ChangeState(FairMQSink::END);

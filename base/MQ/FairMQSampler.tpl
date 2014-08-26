@@ -110,6 +110,10 @@ void FairMQSampler<Loader>::Run()
   }
 
   FairMQDevice::Shutdown();
+
+  boost::lock_guard<boost::mutex> lock(fRunningMutex);
+  fRunningFinished = true;
+  fRunningCondition.notify_one();
 }
 
 template <typename Loader>

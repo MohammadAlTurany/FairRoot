@@ -124,8 +124,11 @@ int main(int argc, char** argv)
     splitter.ChangeState(FairMQSplitter::SETINPUT);
     splitter.ChangeState(FairMQSplitter::RUN);
 
-    char ch;
-    cin.get(ch);
+      boost::unique_lock<boost::mutex> lock(splitter.fRunningMutex);
+      while (!splitter.fRunningFinished)
+      {
+          splitter.fRunningCondition.wait(lock);
+      }
 
     splitter.ChangeState(FairMQSplitter::STOP);
     splitter.ChangeState(FairMQSplitter::END);

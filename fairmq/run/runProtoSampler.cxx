@@ -108,8 +108,11 @@ int main(int argc, char** argv)
     sampler.ChangeState(FairMQProtoSampler::SETINPUT);
     sampler.ChangeState(FairMQProtoSampler::RUN);
 
-    char ch;
-    cin.get(ch);
+      boost::unique_lock<boost::mutex> lock(sampler.fRunningMutex);
+      while (!sampler.fRunningFinished)
+      {
+          sampler.fRunningCondition.wait(lock);
+      }
 
     sampler.ChangeState(FairMQProtoSampler::STOP);
     sampler.ChangeState(FairMQProtoSampler::END);

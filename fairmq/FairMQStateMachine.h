@@ -24,6 +24,9 @@
 #include <boost/msm/front/euml/operator.hpp>
 #include <boost/function.hpp>
 
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition_variable.hpp>
+
 #include "FairMQLogger.h"
 
 namespace msm = boost::msm;
@@ -192,6 +195,10 @@ class FairMQStateMachine : public FairMQFSM::FairMQFSM
     FairMQStateMachine();
     virtual ~FairMQStateMachine();
     void ChangeState(int event);
+
+    boost::condition_variable fRunningCondition;
+    boost::mutex fRunningMutex;
+    bool fRunningFinished;
 };
 
 #endif /* FAIRMQSTATEMACHINE_H_ */
