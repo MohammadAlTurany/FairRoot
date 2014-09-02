@@ -59,6 +59,4 @@ void FairMQStateMachine::ChangeState(int event)
     {
         LOG(ERROR) << e.what();
     }
-
-
-    }
+}

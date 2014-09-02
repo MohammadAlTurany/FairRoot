@@ -100,9 +100,12 @@ int main(int argc, char** argv)
   epn.ChangeState(O2EpnMerger::SETINPUT);
   epn.ChangeState(O2EpnMerger::RUN);
 
-
-  char ch;
-  cin.get(ch);
+  // wait until the running thread has finished processing.
+  boost::unique_lock<boost::mutex> lock(epn.fRunningMutex);
+  while (!epn.fRunningFinished)
+  {
+      epn.fRunningCondition.wait(lock);
+  }
 
   epn.ChangeState(O2EpnMerger::STOP);
   epn.ChangeState(O2EpnMerger::END);
