@@ -112,8 +112,12 @@ int main(int argc, char** argv)
   proxy.ChangeState(O2Proxy::RUN);
 
 
-  char ch;
-  cin.get(ch);
+  // wait until the running thread has finished processing.
+  boost::unique_lock<boost::mutex> lock(proxy.fRunningMutex);
+  while (!proxy.fRunningFinished)
+  {
+      proxy.fRunningCondition.wait(lock);
+  }
 
   proxy.ChangeState(O2Proxy::STOP);
   proxy.ChangeState(O2Proxy::END);
