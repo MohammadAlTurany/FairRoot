@@ -117,9 +117,12 @@ int main(int argc, char** argv)
   merger.ChangeState(O2Merger::SETINPUT);
   merger.ChangeState(O2Merger::RUN);
 
-
-  char ch;
-  cin.get(ch);
+  // wait until the running thread has finished processing.
+  boost::unique_lock<boost::mutex> lock(merger.fRunningMutex);
+  while (!merger.fRunningFinished)
+  {
+      merger.fRunningCondition.wait(lock);
+  }
 
   merger.ChangeState(O2Merger::STOP);
   merger.ChangeState(O2Merger::END);

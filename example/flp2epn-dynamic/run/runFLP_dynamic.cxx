@@ -128,8 +128,12 @@ int main(int argc, char** argv)
   flp.ChangeState(O2FLPex::SETINPUT);
   flp.ChangeState(O2FLPex::RUN);
 
-  char ch;
-  cin.get(ch);
+  // wait until the running thread has finished processing.
+  boost::unique_lock<boost::mutex> lock(flp.fRunningMutex);
+  while (!flp.fRunningFinished)
+  {
+      flp.fRunningCondition.wait(lock);
+  }
 
   flp.ChangeState(O2FLPex::STOP);
   flp.ChangeState(O2FLPex::END);
