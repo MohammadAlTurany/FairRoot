@@ -136,9 +136,10 @@ FairRootManager::FairRootManager()
     fCurrentEntry(),
     fEvtHeaderIsNew(kFALSE),
     fFillLastData(kFALSE),
+    fEntryNr(0),
     fUseFairLinks(kFALSE), fInitFairLinksOnce(kFALSE),
-    fFairLinksBranchName("FairLinkBranch"),
-    fEntryNr(0)
+    fFairLinksBranchName("FairLinkBranch")
+
 {
   if (fgInstance) {
     Fatal("FairRootManager", "Singleton instance already exists.");
