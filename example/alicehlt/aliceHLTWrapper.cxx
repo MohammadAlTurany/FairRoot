@@ -17,6 +17,7 @@
 
 #include "WrapperDevice.h"
 #include <iostream>
+#include <csignal>
 #include <getopt.h>
 #include <memory>
 #include <cstring>
@@ -35,6 +36,33 @@ using std::stringstream;
     std::string method;
     std::string address;
   };
+
+FairMQDevice* gDevice=NULL;
+static void s_signal_handler (int signal)
+{
+  cout << endl << "Caught signal " << signal << endl;
+
+  if (gDevice) {
+    gDevice->ChangeState(FairMQDevice::STOP);
+    gDevice->ChangeState(FairMQDevice::END);
+    cout << "Shutdown complete. Bye!" << endl;
+  } else {
+    cerr << "No device to shut down, ignoring signal ..." << endl;
+  }
+
+  exit(1);
+}
+
+static void s_catch_signals (void)
+{
+  struct sigaction action;
+  action.sa_handler = s_signal_handler;
+  action.sa_flags = 0;
+  sigemptyset(&action.sa_mask);
+  sigaction(SIGINT, &action, NULL);
+  sigaction(SIGQUIT, &action, NULL);
+  sigaction(SIGTERM, &action, NULL);
+}
 
 int main(int argc, char** argv)
 {
@@ -223,7 +251,16 @@ int main(int argc, char** argv)
   deviceArgs.push_back(argv[0]);
   if (iDeviceArg>0)
     deviceArgs.insert(deviceArgs.end(), argv+iDeviceArg, argv+argc);
-  ALICE::HLT::WrapperDevice device(deviceArgs.size(), &deviceArgs[0]);
+
+  gDevice=new ALICE::HLT::WrapperDevice(deviceArgs.size(), &deviceArgs[0]);
+  if (!gDevice) {
+    cerr << "failed to create device"  << endl;
+    return -ENODEV;
+  }
+  s_catch_signals();
+
+  { // scope for the device reference variable
+  FairMQDevice& device=*gDevice;
 
   device.SetTransport(transportFactory);
   device.SetProperty(FairMQDevice::Id, id.c_str());
@@ -236,13 +273,20 @@ int main(int argc, char** argv)
   device.ChangeState(FairMQDevice::INIT);
   for (unsigned iInput=0; iInput<numInputs; iInput++) {
     device.SetProperty(FairMQDevice::InputSocketType, inputSockets[iInput].type.c_str(), iInput);
+    // set High-water-mark for the sockets. in ZMQ, depending on the socket type, some
+    // have only send buffers (PUB, PUSH), some only receive buffers (SUB, PULL), and
+    // some have both (DEALER, ROUTER, PAIR, REQ, REP)
+    // we set both snd and rcv to the same value for the moment
     device.SetProperty(FairMQDevice::InputSndBufSize, inputSockets[iInput].size, iInput);
+    device.SetProperty(FairMQDevice::InputRcvBufSize, inputSockets[iInput].size, iInput);
     device.SetProperty(FairMQDevice::InputMethod,     inputSockets[iInput].method.c_str(), iInput);
     device.SetProperty(FairMQDevice::InputAddress,    inputSockets[iInput].address.c_str(), iInput);
   }
   for (unsigned iOutput=0; iOutput<numOutputs; iOutput++) {
     device.SetProperty(FairMQDevice::OutputSocketType, outputSockets[iOutput].type.c_str(), iOutput);
+    // we set both snd and rcv to the same value for the moment, see above
     device.SetProperty(FairMQDevice::OutputSndBufSize, outputSockets[iOutput].size, iOutput);
+    device.SetProperty(FairMQDevice::OutputRcvBufSize, outputSockets[iOutput].size, iOutput);
     device.SetProperty(FairMQDevice::OutputMethod,     outputSockets[iOutput].method.c_str(), iOutput);
     device.SetProperty(FairMQDevice::OutputAddress,    outputSockets[iOutput].address.c_str(), iOutput);
   }
@@ -256,9 +300,11 @@ int main(int argc, char** argv)
   {
       device.fRunningCondition.wait(lock);
   }
+  } // scope for the device reference variable
 
-  device.ChangeState(FairMQDevice::STOP);
-  device.ChangeState(FairMQDevice::END);
+  FairMQDevice* almostdead=gDevice;
+  gDevice=NULL;
+  delete almostdead;
 
   return iResult;
 }
