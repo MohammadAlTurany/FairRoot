@@ -14,7 +14,7 @@
 
 # Check if cmake has the required version
 CMAKE_MINIMUM_REQUIRED(VERSION 3.11.0 FATAL_ERROR)
-cmake_policy(VERSION 3.11...3.14)
+cmake_policy(VERSION 3.11...3.17)
 
 set(CMAKE_INSTALL_MESSAGE LAZY)
 # Set project version
@@ -273,9 +273,8 @@ if(yaml-cpp_FOUND AND TARGET yaml-cpp AND YAML_CPP_INCLUDE_DIR)
   )
 endif()
 
-configure_file(${CMAKE_SOURCE_DIR}/cmake/scripts/FairRootConfigVersion.cmake.in "${CMAKE_BINARY_DIR}/FairRootConfigVersion.cmake" @ONLY)
-
 # Load the macro to generate the needed version info at compile time
+include(GenerateVersionInfo)
 Generate_Version_Info()
 
 # Set some useful variables
