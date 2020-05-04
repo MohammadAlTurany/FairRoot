@@ -56,6 +56,8 @@ thread_local TArrayI* FairModule::volNumber = 0;
 thread_local Int_t FairModule::fNbOfVolumes = 0;
 thread_local FairVolumeList* FairModule::vList = 0;
 thread_local TRefArray* FairModule::svList = 0;
+thread_local Bool_t IsAlreadycalled=kFALSE;   //!
+
 
 void FairModule::ConstructGeometry()
 {
@@ -564,9 +566,13 @@ Bool_t FairModule::CheckIfSensitive(std::string)
 //__________________________________________________________________________
 Bool_t FairModule::IsSensitive(const std::string& name)
 {
-    LOG(warn) << "Implement IsSensitive in the detector class which inherits from FairModule";
-    LOG(warn) << "For now calling the obsolete function CheckIfSensitive";
-    return CheckIfSensitive(name);
+    if(IsAlreadycalled)    return CheckIfSensitive(name);
+    else {
+      IsAlreadycalled = kTRUE;
+      LOG(warn) << "Implement IsSensitive in the detector class which inherits from FairModule";
+      LOG(warn) << "For now calling the obsolete function CheckIfSensitive";
+      return CheckIfSensitive(name);
+    }
 }
 
 void FairModule::ExpandNode(TGeoNode* fN)

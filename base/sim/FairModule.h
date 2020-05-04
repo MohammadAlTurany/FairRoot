@@ -137,6 +137,9 @@ class FairModule : public TNamed
     FairVolume* getFairVolume(FairGeoNode* fNode);
     void AddSensitiveVolume(TGeoVolume* v);
 
+    /**counter*/
+    static thread_local Bool_t IsAlreadycalled;   //!
+
   private:
     /** Re-implimented from ROOT:  TGeoMatrix::SetDefaultName()  */
     void SetDefaultMatrixName(TGeoMatrix* matrix);
