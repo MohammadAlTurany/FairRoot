@@ -18,8 +18,11 @@ class FairGenericVMCConfig
   public:
     FairGenericVMCConfig();
     virtual ~FairGenericVMCConfig();
-
+    TString getWorkConfigDir( return &work_config);
     virtual void Setup(const char* mcEngine);
+
+ private:
+   TString work_config;
 };
 
 #endif

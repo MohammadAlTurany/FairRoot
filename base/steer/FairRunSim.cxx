@@ -295,6 +295,13 @@ void FairRunSim::SetMCConfig()
     }
 
     fApp->InitMC("foo", "bar");
+
+    if (fSimulationConfig != nullptr) {
+      TString g4config2in=fSimulationConfig->getWorkConfigDir() + "g4Config2.in")
+      
+    }
+
+
 }
 
 void FairRunSim::Run(Int_t NEvents, Int_t) { fApp->RunMC(NEvents); }

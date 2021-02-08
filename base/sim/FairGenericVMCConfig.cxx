@@ -16,7 +16,10 @@
 
 #include <TROOT.h>
 
-FairGenericVMCConfig::FairGenericVMCConfig() {}
+FairGenericVMCConfig::FairGenericVMCConfig()
+  :work_config("")
+{
+}
 
 FairGenericVMCConfig::~FairGenericVMCConfig() {}
 
@@ -29,7 +32,7 @@ void FairGenericVMCConfig::Setup(const char* mcEngine)
     TString lUserConfig = FairRunSim::Instance()->GetUserConfig();
 
     TString work = getenv("VMCWORKDIR");
-    TString work_config = work + "/gconfig/";
+    work_config = work + "/gconfig/";
     work_config.ReplaceAll("//", "/");
 
     TString Lib_config = getenv("GEANT4VMC_MACRO_DIR");

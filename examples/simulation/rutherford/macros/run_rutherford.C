@@ -139,6 +139,12 @@ void run_rutherford(Int_t nEvents = 10, TString mcEngine = "TGeant4", Bool_t isM
 
     // -----   Start run   ----------------------------------------------------
     run->Run(nEvents);
+
+
+
+    run->Run(1);
+
+
     // ------------------------------------------------------------------------
     run->CreateGeometryFile(geoFile);
 
